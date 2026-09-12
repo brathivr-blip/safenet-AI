@@ -2,9 +2,10 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { Activity, AlertTriangle, ArrowRight, Crosshair, HeartPulse, Hospital, LogOut, MapPin, Radio, ShieldCheck, Siren, Users, X } from "lucide-react";
 import { getDashboard, getHealth, login, register, reportEmergency, type DashboardSummary, type Emergency, type User } from "./services/api";
+import EmergencyServices from "./pages/EmergencyServices";
 
 type AuthMode = "login" | "register";
-type View = "overview" | "report" | "incident";
+type View = "overview" | "report" | "incident" | "services";
 
 const fallbackLocation = { latitude: 40.7128, longitude: -74.006 };
 type Location = { latitude: number; longitude: number };
@@ -66,7 +67,8 @@ function App() {
             <div className="grid h-10 w-10 place-items-center rounded-xl bg-emerald-400 text-[#07111d]"><ShieldCheck size={23} /></div>
             <div className="text-left"><div className="font-black tracking-[0.22em] text-white">SAFENET</div><div className="text-[10px] uppercase tracking-[0.3em] text-emerald-300">Response network</div></div>
           </button>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
+            <button onClick={() => setView("services")} className="rounded-lg border border-rose-300/30 bg-rose-400/10 px-3 py-2 text-sm font-bold text-rose-100 transition hover:bg-rose-400/20"><span className="sm:hidden">Services</span><span className="hidden sm:inline">Emergency Services</span></button>
             <span className={`hidden items-center gap-2 text-xs md:flex ${backendOnline ? "text-emerald-300" : "text-rose-300"}`}><span className={`h-2 w-2 rounded-full ${backendOnline ? "bg-emerald-300" : "bg-rose-300"}`} />{backendOnline ? "Systems online" : "Offline"}</span>
             <div className="hidden text-right sm:block"><div className="text-sm font-semibold">{user.name}</div><div className="text-xs text-slate-400">{user.role}</div></div>
             <button aria-label="Sign out" title="Sign out" onClick={logout} className="rounded-lg border border-white/10 p-2 text-slate-400 transition hover:border-white/30 hover:text-white"><LogOut size={17} /></button>
@@ -74,13 +76,14 @@ function App() {
         </div>
       </header>
       <main className="mx-auto max-w-7xl px-5 py-8 lg:px-8">
-        <div className="mb-8 flex flex-col justify-between gap-5 md:flex-row md:items-end">
+        {view !== "services" && <div className="mb-8 flex flex-col justify-between gap-5 md:flex-row md:items-end">
           <div><div className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.24em] text-emerald-300"><Activity size={14} /> Live coordination</div><h1 className="text-3xl font-black tracking-tight md:text-5xl">Good to see you, {user.name.split(" ")[0]}.</h1><p className="mt-2 max-w-xl text-slate-400">One place to report an emergency, coordinate response, and keep the people who matter informed.</p></div>
           <button onClick={() => { setView("report"); setIncident(null); }} className="flex items-center justify-center gap-2 rounded-xl bg-rose-500 px-5 py-3 font-bold text-white shadow-lg shadow-rose-950/30 transition hover:bg-rose-400"><Siren size={18} /> Report emergency <ArrowRight size={17} /></button>
-        </div>
+        </div>}
         {view === "report" && <ReportPanel currentLocation={currentLocation} gpsStatus={gpsStatus} onComplete={(next) => { setIncident(next); setView("incident"); }} onCancel={() => setView("overview")} />}
         {view === "incident" && incident && <IncidentPanel incident={incident} onBack={() => setView("overview")} />}
         {view === "overview" && <Overview dashboard={dashboard} onSelectIncident={(next) => { setIncident(next); setView("incident"); }} />}
+        {view === "services" && <EmergencyServices onBack={() => setView("overview")} />}
         <GoogleMapPanel location={incident && view === "incident" ? { latitude: incident.latitude, longitude: incident.longitude } : currentLocation} gpsStatus={gpsStatus} />
       </main>
     </div>
